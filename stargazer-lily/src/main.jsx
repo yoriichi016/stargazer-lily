@@ -74,7 +74,7 @@ function App() {
           {stage === "intro" && (
             <div className="intro-content">
               <div className="envelope" aria-hidden="true"><div className="flap"/><Heart className="envelope-heart" fill="currentColor"/></div>
-              <h1>A little something for you</h1>
+              <h1>A surprise something for you, my baby.</h1>
               <button className="launch" onClick={() => setStage("letter")} aria-label="Open the surprise">
                 <span className="arrow">➤</span>
                 <span className="launch-label">tap to open</span>
@@ -88,7 +88,7 @@ function App() {
               <header className="window-title"><span>LILY.EXE</span><div><b>−</b><b>□</b><b>×</b></div></header>
               <div className="window-hearts">♥ · ♥ · ♥</div>
               <div className="gingham">
-                <p className="question">A little flower for you ♡<br/>Will you keep this little surprise?</p>
+                <p className="question">A lily flower for you ♡<br/>Do you accept my love?</p>
                 <PixelLily />
                 <div className="choices">
                   <button className="yes" onClick={accept}>YES!</button>
@@ -102,7 +102,7 @@ function App() {
             <div className="accepted">
               <div className="flower-card"><PixelLily bloom/><div className="sparkle">✦　♡　✦</div></div>
               <h2>YAY! ♡</h2>
-              <p>Sending you a little stargazer lily<br/>and a whole lot of happiness.</p>
+              <p>Happy 6th Monthsary!<br/>And a whole lot more of happiness and love.</p>
               <button className="again" onClick={() => {setStage("intro"); setNoCount(0);}}>REPLAY SURPRISE</button>
             </div>
           )}
