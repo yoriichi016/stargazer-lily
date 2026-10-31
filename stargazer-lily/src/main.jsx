@@ -43,13 +43,134 @@ function PixelLily({ bloom = false }) {
   );
 }
 
+/* ---------- letters ---------- */
+const EMPTY_LETTER = { to: "", msg: "", from: "" };
+
+const encodeLetter = (l) => {
+  try { return btoa(unescape(encodeURIComponent(JSON.stringify(l)))); } catch { return ""; }
+};
+const decodeLetter = (s) => {
+  try {
+    const o = JSON.parse(decodeURIComponent(escape(atob(s))));
+    return {
+      to: String(o.to || "").slice(0, 40),
+      msg: String(o.msg || "").slice(0, 700),
+      from: String(o.from || "").slice(0, 40),
+    };
+  } catch { return null; }
+};
+const readSharedLetter = () => {
+  const m = window.location.hash.match(/^#letter=(.+)$/);
+  return m ? decodeLetter(decodeURIComponent(m[1])) : null;
+};
+const sharedLetter = readSharedLetter();
+const loadDraft = () => {
+  try { return { ...EMPTY_LETTER, ...JSON.parse(localStorage.getItem("lily-letter-draft") || "{}") }; }
+  catch { return EMPTY_LETTER; }
+};
+
+function MailView({ letter, received, onEdit, onWriteOwn, onBack }) {
+  const [phase, setPhase] = useState("closed"); // closed -> opening -> reading
+  const [shown, setShown] = useState(0);
+  const [copied, setCopied] = useState(false);
+  const msg = letter.msg.trim() ? letter.msg : "(an empty letter... how mysterious ♡)";
+
+  const open = () => {
+    if (phase !== "closed") return;
+    setPhase("opening");
+    setTimeout(() => setPhase("reading"), 1300);
+  };
+
+  useEffect(() => {
+    if (phase !== "reading") return;
+    setShown(0);
+    const step = Math.max(1, Math.ceil(msg.length / 160));
+    const id = setInterval(() => {
+      setShown((n) => {
+        if (n >= msg.length) { clearInterval(id); return n; }
+        return Math.min(n + step, msg.length);
+      });
+    }, 28);
+    return () => clearInterval(id);
+  }, [phase, msg]);
+
+  const copyLink = async () => {
+    const url = `${window.location.origin}${window.location.pathname}#letter=${encodeURIComponent(encodeLetter(letter))}`;
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      window.prompt("Copy this link:", url);
+      return;
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
+  };
+
+  if (phase !== "reading") {
+    return (
+      <div className={`mail ${phase}`}>
+        <p className="mail-title">{received ? "You've got mail ♡" : "Your letter is sealed ♡"}</p>
+        <button className={`mail-envelope ${phase === "opening" ? "open" : ""}`} onClick={open} aria-label="Open the letter">
+          <span className="m-back" />
+          <span className="m-paper"><i /><i /><i /><i /></span>
+          <span className="m-front" />
+          <span className="m-flap" />
+          <Heart className="m-seal" fill="currentColor" />
+        </button>
+        <p className="hint">{phase === "closed" ? "tap the envelope to open" : "opening..."}</p>
+      </div>
+    );
+  }
+
+  const done = shown >= msg.length;
+  return (
+    <div className="mail-read">
+      <div className="sheet">
+        <p className="sheet-to">{letter.to ? `Dear ${letter.to},` : "Dear you,"}</p>
+        <p className="sheet-msg">{msg.slice(0, shown)}{!done && <span className="caret">▌</span>}</p>
+        {done && <p className="sheet-from">With love,<br />{letter.from || "someone who adores you"} ♥</p>}
+      </div>
+      {done && (
+        <div className="mail-actions">
+          {received ? (
+            <button onClick={onWriteOwn}>WRITE YOUR OWN</button>
+          ) : (
+            <>
+              <button onClick={onEdit}>EDIT</button>
+              <button onClick={copyLink}>{copied ? "COPIED! ♡" : "COPY LINK"}</button>
+              <button onClick={onBack}>HOME</button>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function App() {
-  const [stage, setStage] = useState("intro");
+  const [stage, setStage] = useState(sharedLetter ? "mail" : "intro");
   const [noCount, setNoCount] = useState(0);
   const [sound, setSound] = useState(false);
   const [hearts, setHearts] = useState([]);
   const [opening, setOpening] = useState(false);
   const [burst, setBurst] = useState([]);
+  const [letter, setLetter] = useState(sharedLetter || loadDraft);
+  const [received, setReceived] = useState(!!sharedLetter);
+  const [mailKey, setMailKey] = useState(0);
+
+  useEffect(() => {
+    if (received) return;
+    try { localStorage.setItem("lily-letter-draft", JSON.stringify(letter)); } catch {}
+  }, [letter, received]);
+
+  const updateLetter = (patch) => setLetter((l) => ({ ...l, ...patch }));
+  const sealLetter = () => { setMailKey((k) => k + 1); setStage("mail"); };
+  const writeOwn = () => {
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    setReceived(false);
+    setLetter(loadDraft());
+    setStage("compose");
+  };
 
   useEffect(() => {
     const bits = Array.from({ length: 28 }, (_, i) => ({
@@ -99,6 +220,7 @@ function App() {
                 <span className="launch-label">tap to open</span>
               </button>
               <p className="hint">A tiny surprise is waiting...</p>
+              <button className="write-link" onClick={() => setStage("compose")}>✉ write a letter</button>
             </div>
           )}
 
@@ -117,12 +239,41 @@ function App() {
             </div>
           )}
 
+          {stage === "compose" && (
+            <div className="letter-window compose">
+              <header className="window-title"><span>WRITE.EXE</span><div><b>−</b><b>□</b><b>×</b></div></header>
+              <div className="gingham compose-body">
+                <label>TO
+                  <input value={letter.to} maxLength={40} placeholder="my baby" onChange={(e) => updateLetter({ to: e.target.value })} />
+                </label>
+                <label>MESSAGE
+                  <textarea rows={6} maxLength={700} value={letter.msg} placeholder="Write something sweet..." onChange={(e) => updateLetter({ msg: e.target.value })} />
+                </label>
+                <small className="count">{letter.msg.length}/700</small>
+                <label>FROM
+                  <input value={letter.from} maxLength={40} placeholder="Arvy" onChange={(e) => updateLetter({ from: e.target.value })} />
+                </label>
+                <div className="choices">
+                  <button onClick={sealLetter} disabled={!letter.msg.trim()}>SEAL IT ✉</button>
+                  <button onClick={() => setStage("intro")}>BACK</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {stage === "mail" && (
+            <MailView key={mailKey} letter={letter} received={received} onEdit={() => setStage("compose")} onWriteOwn={writeOwn} onBack={() => setStage("intro")} />
+          )}
+
           {stage === "accepted" && (
             <div className="accepted">
               <div className="flower-card"><PixelLily bloom/><div className="sparkle">✦　♡　✦</div></div>
               <h2>YAY! ♡</h2>
               <p>Happy 6th Monthsary!<br/>And a whole lot more of happiness and love.</p>
-              <button className="again" onClick={() => {setStage("intro"); setNoCount(0);}}>REPLAY SURPRISE</button>
+              <div className="accepted-actions">
+                <button className="again" onClick={() => {setStage("intro"); setNoCount(0);}}>REPLAY SURPRISE</button>
+                <button className="again" onClick={() => setStage("compose")}>WRITE A LETTER</button>
+              </div>
             </div>
           )}
           {stage === "accepted" && burst.map(b => (

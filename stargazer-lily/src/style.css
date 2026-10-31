@@ -106,4 +106,48 @@ h1 { font: 13px "Press Start 2P", monospace; line-height: 1.8; color: #7d3548; m
 .accepted .again { animation: rise .6s 1.1s ease-out both; }
 .burst-heart { position: absolute; left: 50%; top: 45%; z-index: 4; color: #e8607e; pointer-events: none; text-shadow: 0 0 6px #fff8; animation: burst 1.6s ease-out both; }
 
+/* ---------- letters ---------- */
+.write-link { margin-top: 12px; background: none; border: 0; color: #a95e43; font-size: 22px; text-decoration: underline dotted; transition: color .2s, transform .2s; }
+.write-link:hover { color: #e33f5c; transform: translateY(-2px); }
+.accepted-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+
+.compose { width: min(90%, 440px); }
+.compose-body { display: flex; flex-direction: column; gap: 10px; text-align: left; padding: 18px 16px 22px; }
+.compose-body label { display: flex; flex-direction: column; gap: 6px; font: 10px "Press Start 2P", monospace; color: #7d3548; }
+.compose-body input, .compose-body textarea { font: 22px "VT323", monospace; padding: 8px 10px; border: 3px solid #d97f7a; border-radius: 7px; background: #fff8ed; color: #63283b; resize: none; outline: none; transition: box-shadow .2s, border-color .2s; }
+.compose-body input:focus, .compose-body textarea:focus { border-color: #e33f5c; box-shadow: 0 0 0 3px #f17d9a55; }
+.count { text-align: right; font-size: 16px; color: #9d5261; margin-top: -6px; }
+.choices button:disabled { opacity: .5; cursor: not-allowed; }
+
+.mail, .mail-read { z-index: 2; width: 100%; padding: 24px 18px; text-align: center; animation: rise .6s ease-out both; }
+.mail-title { font: 12px/1.8 "Press Start 2P", monospace; color: #7d3548; margin: 0 0 60px; transition: opacity .4s; }
+.mail.opening .mail-title, .mail.opening .hint { opacity: 0; animation: none; }
+.mail .hint { margin-top: 20px; }
+.mail-envelope { position: relative; display: block; width: 280px; height: 185px; margin: 0 auto 30px; padding: 0; border: 0; background: none; animation: bob 3.2s ease-in-out infinite; }
+.mail-envelope:hover { filter: brightness(1.05); }
+.mail-envelope.open { animation: none; }
+.m-back, .m-front, .m-flap, .m-paper { position: absolute; display: block; }
+.m-back { inset: 0; background: #e9a3b3; border: 4px solid #d97f7a; border-radius: 8px; box-shadow: 0 9px 0 #e8d0c5; }
+.m-front { inset: 4px; background: #f8d0d8; border-radius: 4px; clip-path: polygon(0 0, 50% 54%, 100% 0, 100% 100%, 0 100%); z-index: 3; }
+.m-flap { left: 4px; right: 4px; top: 4px; height: calc(100% - 8px); background: #efb7c4; clip-path: polygon(0 0, 100% 0, 50% 54%); transform-origin: top; transition: transform .55s ease; z-index: 4; }
+.mail-envelope.open .m-flap { transform: rotateX(180deg); z-index: 1; }
+.m-paper { left: 16px; right: 16px; bottom: 10px; height: 78%; padding: 16px 14px 0; background: #fffdf4; border: 3px solid #ead9c8; border-radius: 4px; z-index: 2; display: flex; flex-direction: column; gap: 12px; transition: transform .8s .45s cubic-bezier(.3, 1.2, .5, 1); }
+.m-paper i { display: block; height: 5px; background: #e8cdd2; }
+.mail-envelope.open .m-paper { transform: translateY(-95px); }
+.m-seal { position: absolute; left: 50%; top: 46%; width: 34px; height: 34px; margin: -17px 0 0 -17px; color: #e33f5c; z-index: 5; animation: beat 1.6s ease-in-out infinite; filter: drop-shadow(0 2px 0 #a83d5c60); transition: opacity .3s; }
+.mail-envelope.open .m-seal { opacity: 0; animation: none; }
+
+.mail-read { max-width: 460px; }
+.sheet { text-align: left; padding: 22px; max-height: 430px; overflow-y: auto; background-color: #fffdf4; background-image: repeating-linear-gradient(transparent 0 29px, #f0d6dc 29px 30px); border: 4px solid #ead2c9; border-radius: 6px; box-shadow: 0 9px 0 #e8c9c2; line-height: 30px; animation: unfold .7s ease-out both; }
+.sheet p { margin: 0; }
+.sheet-to { font-size: 26px; color: #b53f59; }
+.sheet-msg { font-size: 24px; color: #63283b; white-space: pre-wrap; word-break: break-word; min-height: 30px; }
+.sheet-from { font-size: 24px; color: #b53f59; text-align: right; margin-top: 10px !important; animation: rise .6s ease-out both; }
+.caret { color: #e87991; animation: blink 1s steps(2) infinite; }
+.mail-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 24px; animation: rise .5s ease-out both; }
+.mail-actions button { background: #fff8ed; border: 3px solid #d97f7a; border-radius: 7px; padding: 9px 14px; color: #bd4258; font: 10px "Press Start 2P"; box-shadow: 0 4px 0 #dba5a0; transition: transform .18s; }
+.mail-actions button:hover { transform: translateY(-3px); }
+@keyframes unfold { from { opacity: 0; transform: translateY(40px) scale(.85); } to { opacity: 1; transform: none; } }
+@keyframes blink { 50% { opacity: 0; } }
+
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
