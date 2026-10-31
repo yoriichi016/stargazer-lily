@@ -116,7 +116,7 @@ function App() {
         <div className="code-panel"><h3>CSS</h3><code><span> .scene </span>{"{"}<br/>　background: warm-paper;<br/>　border-radius: 18px;<br/>　overflow: hidden;<br/>{"}"}<br/><br/><span>.floating-heart</span> {"{"}<br/>　animation: float 12s infinite;<br/>{"}"}</code></div>
         <div className="code-panel"><h3>JS</h3><code><span>function</span> accept() {"{"}<br/>　setStage("accepted");<br/>　rainHearts();<br/>{"}"}<br/><br/><span>button</span>.onClick = accept;</code></div>
       </div>
-      <p className="footer">Made with pixels, petals, and a little bit of love ♡</p>
+      <p className="footer">Made by your beloved Arvy! ♡</p>
     </main>
   );
 }
