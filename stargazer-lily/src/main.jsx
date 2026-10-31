@@ -12,6 +12,7 @@ function PixelLily({ bloom = false }) {
         <path d="M88 137 H60 V129 H43 V121 H35 V113 H52 V121 H69 V129 H88Z" fill="#65935b"/>
         <path d="M92 147 H116 V139 H132 V131 H142 V123 H126 V131 H110 V139 H92Z" fill="#507e4d"/>
         <path d="M88 158 H70 V150 H59 V142 H76 V150 H88Z" fill="#78a968"/>
+        <g className="petals">
         {/* flower petals */}
         <path d="M87 78 H73 V64 H64 V48 H69 V34 H82 V43 H90 V60 H98 V43 H111 V34 H116 V48 H107 V64 H98 V78Z" fill="#f5a5b5"/>
         <path d="M78 70 H66 V59 H59 V45 H68 V54 H77 V62 H87 V78Z" fill="#ffd1d5"/>
@@ -36,6 +37,7 @@ function PixelLily({ bloom = false }) {
         <rect x="111" y="77" width="4" height="4" fill="#a83d5c"/>
         <rect x="77" y="89" width="4" height="4" fill="#a83d5c"/>
         <rect x="102" y="89" width="4" height="4" fill="#a83d5c"/>
+        </g>
       </g>
     </svg>
   );
@@ -46,6 +48,8 @@ function App() {
   const [noCount, setNoCount] = useState(0);
   const [sound, setSound] = useState(false);
   const [hearts, setHearts] = useState([]);
+  const [opening, setOpening] = useState(false);
+  const [burst, setBurst] = useState([]);
 
   useEffect(() => {
     const bits = Array.from({ length: 28 }, (_, i) => ({
@@ -57,7 +61,22 @@ function App() {
   }, []);
 
   const dodgeNo = () => setNoCount((n) => n + 1);
-  const accept = () => setStage("accepted");
+  const openLetter = () => {
+    if (opening) return;
+    setOpening(true);
+    setTimeout(() => { setStage("letter"); setOpening(false); }, 750);
+  };
+  const accept = () => {
+    setBurst(Array.from({ length: 26 }, (_, i) => {
+      const angle = ((i / 26) * 360 + Math.random() * 12) * (Math.PI / 180);
+      const dist = 120 + Math.random() * 140;
+      return {
+        id: i, dx: `${Math.cos(angle) * dist}px`, dy: `${Math.sin(angle) * dist - 40}px`,
+        size: 14 + Math.random() * 16, delay: `${Math.random() * 0.2}s`
+      };
+    }));
+    setStage("accepted");
+  };
 
   return (
     <main className="page">
@@ -72,10 +91,10 @@ function App() {
           {hearts.map(h => <span key={h.id} className="floating-heart" style={{left:h.left, animationDelay:h.delay, animationDuration:h.duration, fontSize:h.size}}>♥</span>)}
 
           {stage === "intro" && (
-            <div className="intro-content">
-              <div className="envelope" aria-hidden="true"><div className="flap"/><Heart className="envelope-heart" fill="currentColor"/></div>
+            <div className={`intro-content ${opening ? "leaving" : ""}`}>
+              <div className={`envelope ${opening ? "opening" : ""}`} aria-hidden="true"><div className="flap"/><Heart className="envelope-heart" fill="currentColor"/></div>
               <h1>A surprise something for you, my baby.</h1>
-              <button className="launch" onClick={() => setStage("letter")} aria-label="Open the surprise">
+              <button className="launch" onClick={openLetter} aria-label="Open the surprise">
                 <span className="arrow">➤</span>
                 <span className="launch-label">tap to open</span>
               </button>
@@ -91,7 +110,7 @@ function App() {
                 <p className="question">A lily flower for you ♡<br/>Do you accept my love?</p>
                 <PixelLily />
                 <div className="choices">
-                  <button className="yes" onClick={accept}>YES!</button>
+                  <button className="yes" style={{ scale: 1 + Math.min(noCount * 0.07, 0.5) }} onClick={accept}>YES!</button>
                   <button className="no" style={{ transform: `translate(${Math.min(noCount * 13, 65)}px, ${noCount % 2 ? -8 : 0}px)` }} onMouseEnter={dodgeNo} onClick={dodgeNo}>NO</button>
                 </div>
               </div>
@@ -106,6 +125,9 @@ function App() {
               <button className="again" onClick={() => {setStage("intro"); setNoCount(0);}}>REPLAY SURPRISE</button>
             </div>
           )}
+          {stage === "accepted" && burst.map(b => (
+            <span key={b.id} className="burst-heart" style={{ "--dx": b.dx, "--dy": b.dy, fontSize: b.size, animationDelay: b.delay }}>♥</span>
+          ))}
           <button className="sound" onClick={() => setSound(!sound)} aria-label="Toggle sound">
             {sound ? <Volume2 size={20}/> : <VolumeX size={20}/>}
           </button>
